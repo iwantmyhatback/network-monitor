@@ -1,8 +1,8 @@
 
 
 
-class NoActiveDHCPLeasesError(Exception):
-    """Exception raised when no active DHCP leases are found"""
+class NoDHCPLeasesError(Exception):
+    """Exception raised when no DHCP leases are found"""
     pass
 
 class RouterConnectionError(Exception):
@@ -11,4 +11,12 @@ class RouterConnectionError(Exception):
 
 class RouterConfigurationError(Exception):
     """Exception raised for errors in router configuration"""
+    pass
+
+class NoValidIPAddressError(Exception):
+    """Exception raised when a device has no valid IP address from DHCP or ARP data"""
+    pass
+
+class NoValidMacAddressError(Exception):
+    """Exception raised when a device has no valid MAC address from DHCP or ARP data"""
     pass
