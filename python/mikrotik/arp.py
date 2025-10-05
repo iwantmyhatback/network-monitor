@@ -71,3 +71,24 @@ class ARPManager:
         except Exception as e:
             log.error(f"Error getting ARP entry for IP {ip_address}: {str(e)}")
             return None
+        
+
+
+#####################
+# ARP Entry Data Sample
+#####################
+'''
+{
+"id":           "*E",                   # Unique identifier for the ARP entry
+"address":      "123.123.123.123",      # IP address associated with the ARP entry
+"mac-address":  "12:34:56:AB:CD:EF",    # MAC address associated with the ARP entry
+"interface":    "my_bridge",            # Interface on which the ARP entry was learned
+"published":    "false",                # Whether the ARP entry is published (static) or learned (dynamic)
+"status":       "reachable",            # Status of the ARP entry [reachable|stale]
+"invalid":      "false",                # Whether the ARP entry is considered invalid
+"dhcp":         "false",                # Whether the ARP entry was learned via DHCP
+"dynamic":      "true",                 # Whether the ARP entry is learned (dynamic) or published (static)
+"complete":     "true",                 # Whether the ARP entry is complete
+"disabled":     "false"                 # Whether the ARP entry is disabled
+}
+'''
