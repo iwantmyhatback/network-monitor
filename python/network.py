@@ -1,61 +1,73 @@
 from mikrotik.dhcp import DHCPLeaseManager
 from mikrotik.arp import ARPManager
+from mikrotik.device import Device
 from mikrotik.exceptions import *
 import logging as log
 import json
-
-def merge_device_info(lease_data, arp_data):
-    log.debug(f"Merging DHCP lease data and ARP data for device: {lease_data.get('host-name', lease_data.get('mac-address', 'UNKNOWN'))}")
-    device_info = {
-        'ip_address': lease_data.get('address', 'N/A'),
-        'mac_address': lease_data.get('mac-address', 'N/A'),
-        'hostname': lease_data.get('host-name', 'N/A'),
-        'dhcp_status': lease_data.get('status', 'N/A'),
-        'last_seen': lease_data.get('last-seen', 'N/A'),
-        'comment': lease_data.get('comment', ''),
-        'client_id': lease_data.get('client-id', 'N/A'),
-        'dhcp_server': lease_data.get('server', 'N/A'),
-        'active': lease_data.get('active-address', 'false') == 'true'
-    }
-    
-    if arp_data:
-        device_info.update({
-            'interface': arp_data.get('interface', 'N/A'),
-            'arp_status': arp_data.get('status', 'N/A'),
-            'published': arp_data.get('published', 'N/A'),
-            'invalid': arp_data.get('invalid', 'false') == 'true',
-            'dynamic': arp_data.get('dynamic', 'false') == 'true'
-        })
-    
-    log.debug(f"Merged device info: {json.dumps(device_info, indent=2)}")
-    return device_info
 
 def main():
     log.debug("Starting network device information gathering...")
     dhcp_manager = DHCPLeaseManager()
     arp_manager = ARPManager()
-    devices = []
+    devices_dict = {}  
 
     log.debug("Compiling device information")
     try:
-        active_leases = dhcp_manager.get_active_leases()
-        log.debug(f"Found {len(active_leases)} active DHCP leases:\n {json.dumps(active_leases, indent=2)}")
-        if not active_leases:
-            raise NoActiveDHCPLeasesError("No active DHCP leases found in the network. This might indicate a DHCP server issue or network connectivity problem.")
+        log.debug("Fetching DHCP leases from router...")
+        dhcp_leases = dhcp_manager.get_all_leases()
+        log.debug(f"Found {len(dhcp_leases)} DHCP leases:\n {json.dumps(dhcp_leases, indent=2)}")
+        if not dhcp_leases:
+            log.error("No DHCP leases found in the network.")
+            raise NoDHCPLeasesError("No DHCP leases found in the network. This might indicate a DHCP server issue or network connectivity problem...")
 
-        for lease in active_leases:
+        log.debug("Processing DHCP leases...")
+        for lease in dhcp_leases:
             ip_address = lease.get('address')
-            if not ip_address:
-                log.warning(f"Lease with missing IP address: {json.dumps(lease, indent=2)}")
-            arp_entry = arp_manager.get_arp_by_ip(ip_address)
-            device_info = merge_device_info(lease, arp_entry)
-            devices.append(device_info)
+            mac_address = lease.get('mac-address')
+            if not ip_address or not mac_address:
+                log.warning(f"Lease with missing IP or MAC address: {json.dumps(lease, indent=2)}")
+                continue
 
-        log.info(f"Compiled information for {len(devices)} devices.")
-        log.debug(f"\n{("=" * 80)}\nNetwork Devices Information: \n{("=" * 80)}")
-        for device in devices:
-            log.debug(f"Device Details:\n{("-" * 40)}\nIP Address:\t{device['ip_address']}\nMAC Address:\t{device['mac_address']}\nHostname:\t{device['hostname']}\nInterface:\t{device.get('interface', 'N/A')}\nDHCP Status:\t{device['dhcp_status']}\nARP Status:\t{device.get('arp_status', 'N/A')}\nLast Seen:\t{device['last_seen']}\nDynamic:\t{device.get('dynamic', 'N/A')}\nActive:\t\t{device['active']}\nComment:\t{device['comment']}\n{("-" * 40)}")
+            if mac_address not in devices_dict:
+                log.debug(f"Creating new device entry for MAC: {mac_address}")
+                devices_dict[mac_address] = Device(mac_address)
+            log.debug(f"Adding DHCP data to device with MAC: {mac_address}")
+            devices_dict[mac_address].add_dhcp_data(lease)
+
+            log.debug(f"Fetching ARP entry for MAC: {mac_address}")
+            arp_entry = arp_manager.get_arp_by_mac(mac_address)
+            if arp_entry:
+                log.debug(f"Adding ARP data to device with MAC: {mac_address}")
+                devices_dict[mac_address].add_arp_data(arp_entry)
+            else:
+                log.warning(f"No ARP entry found for MAC: {mac_address}")
+
+
+        log.info(f"Compiled information for {len(devices_dict)} devices.")
+        log.info(f"\n{("=" * 80)}\nNetwork Devices Information: \n{("=" * 80)}\n")
+        
+        for ip, device in devices_dict.items():
+            device_info = device.get_merged_data()
+            log.info(
+                f"Device Details:\n{("-" * 40)}\n"
+                f"IP Address:\t{device_info.get('ip_address')}\n"
+                f"MAC Address:\t{device_info.get('mac_address')}\n"
+                f"Hostname:\t{device_info.get('hostname')}\n"
+                f"Interface:\t{device_info.get('interface')}\n"
+                f"DHCP Status:\t{device_info.get('dhcp_status')}\n"
+                f"ARP Status:\t{device_info.get('arp_status')}\n"
+                f"Last Seen:\t{device_info.get('last_seen')}\n"
+                f"Dynamic:\t{device_info.get('dynamic')}\n"
+                f"Static Lease:\t{device_info.get('static_lease')}\n"
+                f"Comment:\t{device_info.get('comment')}"
+            )
             
+            if device_info.get('conflicts'):
+                log.warning(
+                    f"Conflicts detected:\n"
+                    f"{json.dumps(device_info.get('conflict_details'), indent=2)}"
+                )
+            log.info(f"\n{"-"*40}")
 
     except Exception as e:
         log.error(f"{str(e)}")
