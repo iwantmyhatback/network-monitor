@@ -1,6 +1,6 @@
 # python-wrapper
-### Environment variable options
 
+### Environment variable options
 * PYVENV_LOCATION ::
   * Path to the location for the Python Virtual Environment to be sourced or created & sourced in `shell/run.sh`
 * LOG_LOCATION :: 
@@ -17,3 +17,13 @@
 * AUTO_UPDATE ::
   * Activates pull of repository changes
   * Activates pull of python container image
+
+### Info Options
+* "MIKROTIK_HOST" :: 
+  * IP Address or FQDN of the target router
+  * Must have `api-ssl` enabled in `/ip/service/` -- I recommend scoping that to internal network only
+* "MIKROTIK_USER" ::
+  * Valid User for Mikrotik device
+  * If not setup see: `/user/add` in the Mikrotik CLI
+* "MIKROTIK_PASS" :: 
+  * Password for MIKROTIK_USER
