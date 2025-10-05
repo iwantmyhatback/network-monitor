@@ -88,3 +88,33 @@ class DHCPLeaseManager:
         except Exception as e:
             log.error(f"Error getting lease for IP {ip_address}: {str(e)}")
             return None
+        
+
+
+#####################
+# DHCP Lease Data Sample
+#####################
+'''
+{
+    "id":                 "*D",                     # Unique identifier for the lease entry
+    "address":            "123.123.123.123",        # IP address assigned to the client by the lease
+    "mac-address":        "12:34:56:AB:CD:EF",      # MAC address of the client device
+    "client-id":          "1:12:34:56:AB:CD:EF",    # Client identifier, often derived from the MAC address
+    "address-lists":      "",                       # ???
+    "server":             "myDhcpServer",           # DHCP server that issued the lease
+    "dhcp-option":        "",                       # DHCP options associated with the lease
+    "status":             "bound",                  # Status of the lease [bound|expired]
+    "expires-after":      "15m48s",                 # Time remaining before the lease expires
+    "last-seen":          "14m12s",                 # Time since the lease was last active (this seems to be periodically updated rather than live)
+    "active-address":     "123.123.123.123",        # Currently active IP address for the lease (I KNOW -- If you change the lease address this will not update until the client renews)
+    "active-mac-address": 12:34:56:AB:CD:EF",       # Currently active MAC address for the lease (I ASSUME -- If you change the lease MAC this will not update until the client renews)
+    "active-client-id":   "1:12:34:56:AB:CD:EF",    # Currently active client identifier for the lease (I ASSUME -- If you change the lease client-id this will not update until the client renews)
+    "active-server":      "defconf",                # Currently active DHCP server for the lease (I ASSUME -- If you change the lease server this will not update until the client renews)    
+    "host-name":          "advertisedHostnameHere", # Hostname reported by the client during DHCP negotiation
+    "radius":             "false",                  # Indicates if RADIUS auth is used for this lease
+    "dynamic":            "false",                  # Indicates if the lease is dynamically assigned (by the server) or statically set (by admin)
+    "blocked":            "false",                  # ???
+    "disabled":           "false",                  # Indicates if the lease is disabled (prevents assignment)
+    "comment": "          "                         # Admin comment for the lease
+}
+'''
