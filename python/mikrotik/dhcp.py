@@ -103,7 +103,7 @@ class DHCPLeaseManager:
     "address-lists":      "",                       # ???
     "server":             "myDhcpServer",           # DHCP server that issued the lease
     "dhcp-option":        "",                       # DHCP options associated with the lease
-    "status":             "bound",                  # Status of the lease [bound|expired]
+    "status":             "bound",                  # Status of the lease [bound|waiting|expired]
     "expires-after":      "15m48s",                 # Time remaining before the lease expires
     "last-seen":          "14m12s",                 # Time since the lease was last active (this seems to be periodically updated rather than live)
     "active-address":     "123.123.123.123",        # Currently active IP address for the lease (I KNOW -- If you change the lease address this will not update until the client renews)

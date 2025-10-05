@@ -84,7 +84,7 @@ class ARPManager:
 "mac-address":  "12:34:56:AB:CD:EF",    # MAC address associated with the ARP entry
 "interface":    "my_bridge",            # Interface on which the ARP entry was learned
 "published":    "false",                # Whether the ARP entry is published (static) or learned (dynamic)
-"status":       "reachable",            # Status of the ARP entry [reachable|stale]
+"status":       "reachable",            # Status of the ARP entry [reachable|stale|delay|failed]
 "invalid":      "false",                # Whether the ARP entry is considered invalid
 "dhcp":         "false",                # Whether the ARP entry was learned via DHCP
 "dynamic":      "true",                 # Whether the ARP entry is learned (dynamic) or published (static)
