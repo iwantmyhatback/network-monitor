@@ -1,6 +1,6 @@
 from mikrotik.dhcp import DHCPLeaseManager
 from mikrotik.arp import ARPManager
-from mikrotik.device import Device
+from mikrotik.network_device import NetworkDevice
 from mikrotik.exceptions import *
 import logging as log
 import json
@@ -30,7 +30,7 @@ def main():
 
             if mac_address not in devices_dict:
                 log.debug(f"Creating new device entry for MAC: {mac_address}")
-                devices_dict[mac_address] = Device(mac_address)
+                devices_dict[mac_address] = NetworkDevice(mac_address)
             log.debug(f"Adding DHCP data to device with MAC: {mac_address}")
             devices_dict[mac_address].add_dhcp_data(lease)
 

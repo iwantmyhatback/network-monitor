@@ -2,9 +2,9 @@ import json
 import logging as log
 from mikrotik.exceptions import *
 
-class Device:
+class NetworkDevice:
     def __init__(self, identifier):
-        log.debug(f"Device.__init__({self}) with identifier: {identifier}")
+        log.debug(f"NetworkDevice.__init__({self}) with identifier: {identifier}")
         # Indending for this to be a MAC Address
         self.identifier = identifier
         self.dhcp_data = {
@@ -33,18 +33,18 @@ class Device:
         self._conflict_details = {}
 
     def add_dhcp_data(self, lease_data):
-        log.debug(f"Device.add_dhcp_data({self}) with lease data: {json.dumps(lease_data, indent=2)}")
+        log.debug(f"NetworkDevice.add_dhcp_data({self}) with lease data: {json.dumps(lease_data, indent=2)}")
         self.dhcp_data.update(lease_data)
         log.debug(f"Updated DHCP data: {json.dumps(self.dhcp_data, indent=2)}")
         self._check_conflicts()
 
     def add_arp_data(self, arp_data):
-        log.debug(f"Device.add_arp_data({self}) with ARP data: {json.dumps(arp_data, indent=2)}")
+        log.debug(f"NetworkDevice.add_arp_data({self}) with ARP data: {json.dumps(arp_data, indent=2)}")
         self.arp_data.update(arp_data)
         self._check_conflicts()
 
     def _check_conflicts(self):
-        log.debug(f"Device._check_conflicts({self})")
+        log.debug(f"NetworkDevice._check_conflicts({self})")
         self._has_conflicts = False
         self._conflict_details = {}
 
@@ -70,9 +70,7 @@ class Device:
             }
 
     def get_merged_data(self):
-        log.debug(f"Device.get_merged_data({self})")
-        log.debug(f"Device.get_merged_data Current DHCP data: {self.dhcp_data}")
-        log.debug(f"Device.get_merged_data Current ARP data: {self.arp_data}")
+        log.debug(f"NetworkDevice.get_merged_data({self})")
                                                   
         device_info = {
             'conflicts': self._has_conflicts,
@@ -81,14 +79,14 @@ class Device:
 
         device_ip_address = self.dhcp_data.get('address') or self.arp_data.get('address') or None
         if device_ip_address is None:
-            log.error(f"Device {self.identifier} has no valid IP address from DHCP or ARP data.")
-            raise NoValidIPAddressError(f"Device {self.identifier} has no valid IP address from DHCP or ARP data.")
+            log.error(f"NetworkDevice {self.identifier} has no valid IP address from DHCP or ARP data.")
+            raise NoValidIPAddressError(f"NetworkDevice {self.identifier} has no valid IP address from DHCP or ARP data.")
         device_info.update({'ip_address': device_ip_address})
 
         device_mac_address = self.dhcp_data.get('mac-address') or self.arp_data.get('mac-address') or None
         if device_mac_address is None:
-            log.error(f"Device {self.identifier} has no valid MAC address from DHCP or ARP data.")
-            raise NoValidMacAddressError(f"Device {self.identifier} has no valid MAC address from DHCP or ARP data.")
+            log.error(f"NetworkDevice {self.identifier} has no valid MAC address from DHCP or ARP data.")
+            raise NoValidMacAddressError(f"NetworkDevice {self.identifier} has no valid MAC address from DHCP or ARP data.")
         device_info.update({'mac_address': device_mac_address})
 
         device_info.update({
@@ -113,17 +111,17 @@ class Device:
         return device_info
 
     def has_conflicts(self):
-        log.debug(f"Device.has_conflicts({self}) => {self._has_conflicts}")
+        log.debug(f"NetworkDevice.has_conflicts({self}) => {self._has_conflicts}")
         return self._has_conflicts
 
     def get_conflict_details(self):
-        log.debug(f"Device.get_conflict_details({self}) => {json.dumps(self._conflict_details, indent=2)}")
+        log.debug(f"NetworkDevice.get_conflict_details({self}) => {json.dumps(self._conflict_details, indent=2)}")
         return self._conflict_details
 
     def get_dhcp_data(self):
-        log.debug(f"Device.get_dhcp_data({self}) => {json.dumps(self.dhcp_data, indent=2)}")
+        log.debug(f"NetworkDevice.get_dhcp_data({self}) => {json.dumps(self.dhcp_data, indent=2)}")
         return self.dhcp_data
 
     def get_arp_data(self):
-        log.debug(f"Device.get_arp_data({self}) => {json.dumps(self.arp_data, indent=2)}")
+        log.debug(f"NetworkDevice.get_arp_data({self}) => {json.dumps(self.arp_data, indent=2)}")
         return self.arp_data
