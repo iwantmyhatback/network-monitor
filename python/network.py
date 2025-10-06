@@ -1,5 +1,6 @@
 from mikrotik.dhcp import DHCPLeaseManager
 from mikrotik.arp import ARPManager
+from mikrotik.bridge import BridgeHostManager
 from mikrotik.network_device import NetworkDevice
 from mikrotik.exceptions import *
 import logging as log
@@ -9,7 +10,8 @@ def main():
     log.debug("Starting network device information gathering...")
     dhcp_manager = DHCPLeaseManager()
     arp_manager = ARPManager()
-    devices_dict = {}  
+    bridge_manager = BridgeHostManager()
+    devices_dict = {}
 
     log.debug("Compiling device information")
     try:
@@ -42,6 +44,14 @@ def main():
             else:
                 log.warning(f"No ARP entry found for MAC: {mac_address}")
 
+            log.debug(f"Fetching bridge data for MAC: {mac_address}")
+            bridge_entry = bridge_manager.get_bridge_host_by_mac(mac_address)
+            if bridge_entry:
+                log.debug(f"Adding bridge data to device with MAC: {mac_address}")
+                devices_dict[mac_address].add_bridge_data(bridge_entry)
+            else:
+                log.warning(f"No bridge entry found for MAC: {mac_address}")
+
 
         log.info(f"Compiled information for {len(devices_dict)} devices.")
         log.info(f"\n{("=" * 80)}\nNetwork Devices Information: \n{("=" * 80)}\n")
@@ -59,6 +69,11 @@ def main():
                 f"Last Seen:\t{device_info.get('last_seen')}\n"
                 f"Dynamic:\t{device_info.get('dynamic')}\n"
                 f"Static Lease:\t{device_info.get('static_lease')}\n"
+                f"Bridge:\t\t{device_info.get('bridge')}\n"
+                f"Bridge Port:\t{device_info.get('bridge_interface')}\n"
+                f"Bridge Status:\t{device_info.get('bridge_status')}\n"
+                f"On Bridge:\t{device_info.get('on_bridge')}\n"
+                f"Bridge Local:\t{device_info.get('bridge_local')}\n"
                 f"Comment:\t{device_info.get('comment')}"
             )
             
@@ -74,6 +89,7 @@ def main():
     finally:
         dhcp_manager.disconnect()
         arp_manager.disconnect()
+        bridge_manager.disconnect()
 
 if __name__ == "__main__":
     main()

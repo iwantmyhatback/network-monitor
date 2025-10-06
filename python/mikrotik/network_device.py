@@ -28,6 +28,14 @@ class NetworkDevice:
             'invalid': None,
             'dynamic': None,
         }
+        self.bridge_data = {
+            'bridge': None,
+            'interface': None,
+            'local': None,
+            'mac-address': None,
+            'on-bridge': None,
+            'status': None,
+        }
 
         self._has_conflicts = False
         self._conflict_details = {}
@@ -41,6 +49,11 @@ class NetworkDevice:
     def add_arp_data(self, arp_data):
         log.debug(f"NetworkDevice.add_arp_data({self}) with ARP data: {json.dumps(arp_data, indent=2)}")
         self.arp_data.update(arp_data)
+        self._check_conflicts()
+
+    def add_bridge_data(self, bridge_data):
+        log.debug(f"NetworkDevice.add_bridge_data({self}) with bridge data: {json.dumps(bridge_data, indent=2)}")
+        self.bridge_data.update(bridge_data)
         self._check_conflicts()
 
     def _check_conflicts(self):
@@ -99,12 +112,22 @@ class NetworkDevice:
             'static_lease': self.dhcp_data.get('dynamic', 'true') == 'false'
         })
 
+        # Add ARP information
         device_info.update({
             'interface': self.arp_data.get('interface') or 'noARP',
             'arp_status': self.arp_data.get('status') or 'noARP',
             'published': self.arp_data.get('published') or 'noARP',
             'invalid': self.arp_data.get('invalid', 'false') == 'true',
             'dynamic': self.arp_data.get('dynamic', 'false') == 'true'
+        })
+
+        # Add Bridge information
+        device_info.update({
+            'bridge': self.bridge_data.get('bridge') or 'noBridge',
+            'bridge_interface': self.bridge_data.get('interface') or 'noBridge',
+            'bridge_local': self.bridge_data.get('local', 'false') == 'true',
+            'on_bridge': self.bridge_data.get('on-bridge', 'false') == 'true',
+            'bridge_status': self.bridge_data.get('status') or 'noBridge'
         })
 
         log.debug(f"Merged device info for {self.identifier}: {json.dumps(device_info, indent=2)}")
@@ -125,3 +148,7 @@ class NetworkDevice:
     def get_arp_data(self):
         log.debug(f"NetworkDevice.get_arp_data({self}) => {json.dumps(self.arp_data, indent=2)}")
         return self.arp_data
+
+    def get_bridge_data(self):
+        log.debug(f"NetworkDevice.get_bridge_data({self}) => {json.dumps(self.bridge_data, indent=2)}")
+        return self.bridge_data
