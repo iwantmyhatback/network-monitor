@@ -5,14 +5,15 @@ import json
 import logging as log
 
 class DHCPLeaseManager:
-    def __init__(self):
+    def __init__(self, connection=None):
         log.debug(f"DHCPLeaseManager.__init__({self})")
         self.router = RouterLogin()
-        self.connection = None
+        self.connection = connection
 
     def connect(self):
         log.debug(f"DHCPLeaseManager.connect({self})")
-        self.connection = self.router.connect()
+        if not self.connection:
+            self.connection = self.router.connect()
         if not self.connection:
             raise RouterConnectionError("Failed to connect to router for ARP entries")
         return self.connection is not None

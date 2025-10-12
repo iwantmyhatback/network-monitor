@@ -3,14 +3,16 @@ from mikrotik.arp import ARPManager
 from mikrotik.bridge import BridgeHostManager
 from mikrotik.network_device import NetworkDevice
 from mikrotik.exceptions import *
+from mikrotik.login import RouterLogin
 import logging as log
 import json
 
 def main():
     log.debug("Starting network device information gathering...")
-    dhcp_manager = DHCPLeaseManager()
-    arp_manager = ARPManager()
-    bridge_manager = BridgeHostManager()
+    router = RouterLogin().connect()
+    dhcp_manager = DHCPLeaseManager(router)
+    arp_manager = ARPManager(router)
+    bridge_manager = BridgeHostManager(router)
     devices_dict = {}
 
     log.debug("Compiling device information")
@@ -87,6 +89,8 @@ def main():
     except Exception as e:
         log.error(f"{str(e)}")
     finally:
+        router.disconnect()
+        # Just in case any manager opened its own connection (which they shouldn't now)
         dhcp_manager.disconnect()
         arp_manager.disconnect()
         bridge_manager.disconnect()
